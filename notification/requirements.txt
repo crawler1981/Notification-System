@@ -1,0 +1,7 @@
+fastapi==0.136.3
+fastapi-cli==0.0.24
+fastapi-cloud-cli==0.18.0
+aio-pika==9.6.2
+aiofiles==24.1.0
+pydantic==2.13.4
+uvicorn==0.48.0

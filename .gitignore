@@ -1,0 +1,32 @@
+# محیط مجازی
+venv/
+.venv/
+env/
+.env
+
+# Venom logs (مسیر خاص شما)
+tests/venom/
+*.log
+
+*.log
+logs/
+
+__pycache__/
+*.py[cod]
+*.so
+
+
+docker-compose.override.yml
+
+
+.vscode/
+.idea/
+*.swp
+.mypy_cache
+
+.DS_Store
+Thumbs.db
+
+
+*.tmp
+*.bak
