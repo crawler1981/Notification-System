@@ -5,7 +5,7 @@ env/
 .env
 
 # Venom logs (مسیر خاص شما)
-tests/venom/
+tests/venom/*.log
 *.log
 
 *.log

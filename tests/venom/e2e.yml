@@ -1,0 +1,140 @@
+name: E2E Test Suite for Notification System
+vars:
+  gateway_url: "http://localhost:9000"
+  notification_url: "http://localhost:9001"
+
+testcases:
+  - name: "Health Check Tests"
+    steps:
+      - type: http
+        name: "Gateway Health Check"
+        method: GET
+        url: "{{.gateway_url}}/health"
+        assertions:
+          - result.statuscode ShouldEqual 200
+          - result.bodyjson.status ShouldEqual "healthy"
+
+      - type: http
+        name: "Notification Service Health Check"
+        method: GET
+        url: "{{.notification_url}}/health"
+        assertions:
+          - result.statuscode ShouldEqual 200
+          - result.bodyjson.status ShouldEqual "healthy"
+
+  - name: "Send Notification Tests"
+    steps:
+      - type: http
+        name: "Send Valid Notification"
+        method: POST
+        url: "{{.gateway_url}}/send"
+        body: |
+          {
+            "user_id": "test_user_001",
+            "message": "Hello from Venom E2E Test!"
+          }
+        headers:
+          Content-Type: "application/json"
+        assertions:
+          - result.statuscode ShouldEqual 200
+          - result.bodyjson.status ShouldEqual "queued"
+          - result.bodyjson.user_id ShouldEqual "test_user_001"
+
+      - type: http
+        name: "Send Another Notification"
+        method: POST
+        url: "{{.gateway_url}}/send"
+        body: |
+          {
+            "user_id": "test_user_002",
+            "message": "Venom is awesome for E2E testing!"
+          }
+        headers:
+          Content-Type: "application/json"
+        assertions:
+          - result.statuscode ShouldEqual 200
+          - result.bodyjson.status ShouldEqual "queued"
+          - result.bodyjson.user_id ShouldEqual "test_user_002"
+
+      - type: http
+        name: "Send Persian Message"
+        method: POST
+        url: "{{.gateway_url}}/send"
+        body: |
+          {
+            "user_id": "کاربر_فارسی",
+            "message": "پیام تست به زبان فارسی"
+          }
+        headers:
+          Content-Type: "application/json"
+        assertions:
+          - result.statuscode ShouldEqual 200
+          - result.bodyjson.status ShouldEqual "queued"
+
+  - name: "Error Handling Tests"
+    steps:
+      - type: http
+        name: "Missing user_id"
+        method: POST
+        url: "{{.gateway_url}}/send"
+        body: |
+          {
+            "message": "This should fail"
+          }
+        headers:
+          Content-Type: "application/json"
+        assertions:
+          - result.statuscode ShouldEqual 422
+
+      - type: http
+        name: "Missing message"
+        method: POST
+        url: "{{.gateway_url}}/send"
+        body: |
+          {
+            "user_id": "user123"
+          }
+        headers:
+          Content-Type: "application/json"
+        assertions:
+          - result.statuscode ShouldEqual 422
+
+      - type: http
+        name: "Empty values"
+        method: POST
+        url: "{{.gateway_url}}/send"
+        body: |
+          {
+            "user_id": "",
+            "message": ""
+          }
+        headers:
+          Content-Type: "application/json"
+        assertions:
+          - result.statuscode ShouldEqual 400
+          - result.bodyjson.detail ShouldContainSubstring "required"
+
+  - name: "Performance Tests"
+    steps:
+      - name: Wait for queue processing
+        type: exec
+        command:
+          - powershell
+          - -Command
+          - Start-Sleep -Seconds 3
+        assertions:
+          - result.code ShouldEqual 0
+
+      - type: http
+        name: "Send Bulk Notifications"
+        method: POST
+        url: "{{.gateway_url}}/send"
+        body: |
+          {
+            "user_id": "bulk_user",
+            "message": "Bulk test message - {{.now}}"
+          }
+        headers:
+          Content-Type: "application/json"
+        assertions:
+          - result.statuscode ShouldEqual 200
