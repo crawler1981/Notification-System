@@ -5,11 +5,13 @@ services:
     image: rabbitmq:3.12-management
     container_name: notification-rabbitmq
     ports:
-      - "5672:5672"   # AMQP
-      - "15672:15672" # Management UI
+      - "5672:5672"
+      - "15672:15672"
     environment:
       RABBITMQ_DEFAULT_USER: guest
       RABBITMQ_DEFAULT_PASS: guest
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
     healthcheck:
       test: ["CMD", "rabbitmq-diagnostics", "ping"]
       interval: 10s
@@ -19,7 +21,9 @@ services:
       - notification-net
 
   gateway:
-    build: ./gateway
+    build:
+      context: .
+      dockerfile: gateway/Dockerfile
     container_name: notification-gateway
     ports:
       - "9000:9000"
@@ -35,7 +39,9 @@ services:
       - notification-net
 
   notification:
-    build: ./notification
+    build:
+      context: .
+      dockerfile: notification/Dockerfile
     container_name: notification-service
     ports:
       - "9001:9001"
@@ -50,6 +56,18 @@ services:
     networks:
       - notification-net
 
+  library:
+    build:
+      context: .
+      dockerfile: library/Dockerfile
+    container_name: library-service
+    ports:
+      - "50051:50051"
+    networks:
+      - notification-net
+
 networks:
   notification-net:
     driver: bridge
+volumes:                
+  rabbitmq_data: 

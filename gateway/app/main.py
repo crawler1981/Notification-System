@@ -2,6 +2,7 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 from .publisher import connect_rabbitmq, publish_message, close_rabbitmq
+from .grpc_client import send_to_library
 
 
 class NotificationRequest(BaseModel):
@@ -26,6 +27,22 @@ async def send_notification(req: NotificationRequest):
     await publish_message(req.user_id, req.message)
     return {"status": "queued", "user_id": req.user_id}
 
+@app.post("/send-grpc")
+async def send_grpc(req: NotificationRequest):
+    if not req.user_id or not req.message:
+        raise HTTPException(status_code=400, detail="user_id and message required")
+    try:
+        response = await send_to_library(req.user_id, req.message)
+        return {
+            "status": "grpc_sent",
+            "library_response": {
+                "status": response.status,
+                "details": response.details,
+            }
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"gRPC error: {str(e)}")
+    
 @app.get("/health")
 async def health():
     return {"status": "healthy"}    

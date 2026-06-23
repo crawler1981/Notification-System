@@ -2,10 +2,10 @@ FROM python:3.11-slim
 
 WORKDIR /app
 
-COPY gateway/requirements.txt .
+COPY library/requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-COPY gateway/app ./app
+COPY library/app ./app
 
 COPY proto /proto
 
@@ -17,6 +17,6 @@ RUN python -m grpc_tools.protoc -I/proto --python_out=/app/proto --grpc_python_o
 
 ENV PYTHONPATH=/app/proto
 
-EXPOSE 9000
+EXPOSE 50051
 
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "9000"]
+CMD ["python", "-m", "app.server"]

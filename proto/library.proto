@@ -1,0 +1,15 @@
+syntax = "proto3";
+
+service LibraryService {
+  rpc SendMessage (MessageRequest) returns (MessageResponse);
+}
+
+message MessageRequest {
+  string user_id = 1;
+  string message = 2;
+}
+
+message MessageResponse {
+  string status = 1;
+  string details = 2;
+}
