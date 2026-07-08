@@ -3,9 +3,9 @@ sequenceDiagram
     participant Notification
     participant Gateway
     participant Library
-    participant Queue(RabbitMQ) 
+    participant Queue as Queue(RabbitMQ)
     participant gRPC
-
+    
     Gateway ->> Queue : send notification
     Queue ->> Notification : send notification
     Notification ->> Notification : print notification
