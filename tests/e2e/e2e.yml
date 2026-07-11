@@ -119,9 +119,8 @@ testcases:
       - name: Wait for queue processing
         type: exec
         command:
-          - powershell
-          - -Command
-          - Start-Sleep -Seconds 3
+          - sleep
+          - "3"
         assertions:
           - result.code ShouldEqual 0
 
