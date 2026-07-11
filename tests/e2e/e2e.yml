@@ -137,3 +137,77 @@ testcases:
           Content-Type: "application/json"
         assertions:
           - result.statuscode ShouldEqual 200
+  - name: "gRPC Integration Tests"
+    steps:
+      - type: http
+        name: "Send Valid gRPC Request"
+        method: POST
+        url: "{{.gateway_url}}/send-grpc"
+        body: |
+          {
+            "user_id": "grpc_user_001",
+            "message": "Hello from gRPC E2E test!"
+          }
+        headers:
+          Content-Type: "application/json"
+        assertions:
+          - result.statuscode ShouldEqual 200
+          - result.bodyjson.status ShouldEqual "grpc_sent"
+          - result.bodyjson.library_response.status ShouldEqual "OK"
+          - result.bodyjson.library_response.details ShouldEqual "Message printed successfully"
+
+      - type: http
+        name: "Send gRPC Request with Persian Message"
+        method: POST
+        url: "{{.gateway_url}}/send-grpc"
+        body: |
+          {
+            "user_id": "grpc_user_002",
+            "message": "پیام تست gRPC به فارسی"
+          }
+        headers:
+          Content-Type: "application/json"
+        assertions:
+          - result.statuscode ShouldEqual 200
+          - result.bodyjson.status ShouldEqual "grpc_sent"
+
+      - type: http
+        name: "gRPC - Missing user_id"
+        method: POST
+        url: "{{.gateway_url}}/send-grpc"
+        body: |
+          {
+            "message": "This should fail"
+          }
+        headers:
+          Content-Type: "application/json"
+        assertions:
+          - result.statuscode ShouldEqual 422
+
+      - type: http
+        name: "gRPC - Missing message"
+        method: POST
+        url: "{{.gateway_url}}/send-grpc"
+        body: |
+          {
+            "user_id": "grpc_user_003"
+          }
+        headers:
+          Content-Type: "application/json"
+        assertions:
+          - result.statuscode ShouldEqual 422
+
+      - type: http
+        name: "gRPC - Empty values"
+        method: POST
+        url: "{{.gateway_url}}/send-grpc"
+        body: |
+          {
+            "user_id": "",
+            "message": ""
+          }
+        headers:
+          Content-Type: "application/json"
+        assertions:
+          - result.statuscode ShouldEqual 400
+          - result.bodyjson.detail ShouldContainSubstring "required"
