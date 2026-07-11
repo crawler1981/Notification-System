@@ -3,6 +3,7 @@ version: '3.8'
 services:
   rabbitmq:
     image: rabbitmq:3.12-management
+    user: "999:999"
     container_name: notification-rabbitmq
     ports:
       - "5672:5672"
@@ -21,6 +22,7 @@ services:
       - notification-net
 
   gateway:
+    restart: on-failure
     build:
       context: .
       dockerfile: gateway/Dockerfile
@@ -39,6 +41,7 @@ services:
       - notification-net
 
   notification:
+    restart: on-failure
     build:
       context: .
       dockerfile: notification/Dockerfile
